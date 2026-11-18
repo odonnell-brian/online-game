@@ -1,0 +1,12 @@
+{
+  "name": "interview-starter",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "setup": "npm install && npm --prefix frontend install",
+    "dev": "concurrently -n api,web -c blue,green \"mvn spring-boot:run\" \"npm --prefix frontend run dev\""
+  },
+  "devDependencies": {
+    "concurrently": "9.0.1"
+  }
+}
