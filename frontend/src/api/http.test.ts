@@ -25,24 +25,33 @@ describe("request", () => {
     );
   });
 
-  it("throws the first validation message from a 400", async () => {
+  it("throws the first field error from a validation problem", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(
-        jsonResponse({ errors: [{ defaultMessage: "must not be blank" }] }, 400),
+        jsonResponse(
+          {
+            status: 400,
+            detail: "One or more fields are invalid.",
+            errors: [{ field: "title", message: "must not be blank" }],
+          },
+          400,
+        ),
       ),
     );
 
-    await expect(request("/api/x")).rejects.toThrow("must not be blank");
+    await expect(request("/api/x")).rejects.toThrow("title must not be blank");
   });
 
-  it("falls back to the error body's message", async () => {
+  it("falls back to the problem's detail", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(jsonResponse({ message: "Not found" }, 404)),
+      vi.fn().mockResolvedValue(
+        jsonResponse({ status: 404, detail: "Idea 9 not found." }, 404),
+      ),
     );
 
-    await expect(request("/api/x")).rejects.toThrow("Not found");
+    await expect(request("/api/x")).rejects.toThrow("Idea 9 not found.");
   });
 
   it("falls back to the status code when the body is not JSON", async () => {

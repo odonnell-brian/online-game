@@ -1,15 +1,19 @@
 package com.example.interview.controller;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.interview.exception.IdeaNotFoundException;
 import com.example.interview.model.Idea;
 import com.example.interview.service.IdeaService;
 import java.util.List;
@@ -96,6 +100,59 @@ class IdeaApiControllerTest {
         mvc.perform(get("/api/ideas/4/vote")).andExpect(status().isMethodNotAllowed());
 
         verifyNoInteractions(ideaService);
+    }
+
+    @Test
+    void create_validationFailureReturnsProblemWithFieldErrors() throws Exception {
+        mvc.perform(
+                        post("/api/ideas")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"title\":\"\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors[0].field").value("title"))
+                .andExpect(jsonPath("$.errors[0].message").value("must not be blank"));
+    }
+
+    @Test
+    void create_malformedJsonReturns400Problem() throws Exception {
+        mvc.perform(post("/api/ideas").contentType(MediaType.APPLICATION_JSON).content("{oops"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(400));
+
+        verifyNoInteractions(ideaService);
+    }
+
+    @Test
+    void vote_unknownIdReturns404Problem() throws Exception {
+        when(ideaService.vote(99L)).thenThrow(new IdeaNotFoundException(99L));
+
+        mvc.perform(post("/api/ideas/99/vote"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.title").value("Idea not found"))
+                .andExpect(jsonPath("$.detail").value("Idea 99 not found."));
+    }
+
+    @Test
+    void vote_nonNumericIdReturns400() throws Exception {
+        mvc.perform(post("/api/ideas/abc/vote")).andExpect(status().isBadRequest());
+
+        verifyNoInteractions(ideaService);
+    }
+
+    @Test
+    void unexpectedErrorReturns500WithoutLeakingDetails() throws Exception {
+        when(ideaService.getIdeas()).thenThrow(new RuntimeException("db password is hunter2"));
+
+        mvc.perform(get("/api/ideas"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.detail").value("An unexpected error occurred."))
+                .andExpect(content().string(not(containsString("hunter2"))));
     }
 
     private static Idea idea(Long id, String title, int votes) {

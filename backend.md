@@ -71,8 +71,20 @@ HTTP request
 ### Bean Validation (`spring-boot-starter-validation`)
 
 - Constraints live on the entity: `@NotBlank` and `@Size(max = 200)` on `title`, `@Size(max = 2000)` on `description`.
-- `@Valid` on the controller parameter triggers them. A failure throws `MethodArgumentNotValidException`, and Spring returns a 400 response.
-- `application.properties` sets `server.error.include-binding-errors=always` so the 400 body includes an `errors` array. The frontend reads `errors[0].defaultMessage` to show the message.
+- `@Valid` on the controller parameter triggers them. A failure throws `MethodArgumentNotValidException`, which `GlobalExceptionHandler` turns into a 400 with an `errors` array of `{ field, message }`. The frontend shows the first one.
+
+### Error responses (`exception/`)
+
+`GlobalExceptionHandler` is a `@RestControllerAdvice` that returns every error as an RFC 9457 problem (`application/problem+json`, with `status`, `title`, `detail`):
+
+| Cause | Status |
+| --- | --- |
+| `IdeaNotFoundException` (for example, voting on an unknown id) | 404 |
+| Validation failure (adds an `errors` array) | 400 |
+| Malformed JSON, non-numeric id, wrong HTTP method, unknown route | 400 / 405 / 404 (handled by the `ResponseEntityExceptionHandler` base class) |
+| Anything else | 500 with a generic message. The real exception is logged, never sent to the client. |
+
+To map a new exception, add an `@ExceptionHandler` method that returns a `ProblemDetail`.
 
 ### Spring Data JPA and Hibernate (`spring-boot-starter-data-jpa`)
 
@@ -101,7 +113,7 @@ HTTP request
 | New resource | New `@Entity`, a repository interface, and a controller in the same package tree |
 | Another endpoint | Add a method to the controller, for example `@GetMapping("/{id}")` or `@DeleteMapping("/{id}")` |
 | Business logic | Add a method to `IdeaService` and call it from the controller |
-| Consistent error responses | Add a `@RestControllerAdvice` with `@ExceptionHandler` methods |
+| New error case | Throw a specific exception and map it in `GlobalExceptionHandler` |
 | Different database | `pom.xml` dependency plus `application.properties` |
 
 ## 5. Talking points and tradeoffs

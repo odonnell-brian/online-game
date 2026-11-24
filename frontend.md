@@ -91,9 +91,8 @@ Because the browser sees one origin, **no CORS configuration is needed** on the 
 
 ### Error handling path
 
-- `request()` in `api/http.ts` checks `res.ok`. On failure it tries to parse the JSON error body and throws an `Error` using the first validation message (`errors[0].defaultMessage`), then `message`, then a generic status string.
+- `request()` in `api/http.ts` checks `res.ok`. On failure it parses the backend's problem response and throws an `Error` using the first field error (`"title must not be blank"`), then `detail`, then a generic status string.
 - `IdeaView` catches failures from loading, submitting and voting, and stores the message in `error`, which renders in a red block (`role="alert"`) above the button. A blank title is rejected before any request is sent. If create fails, the form keeps its values so the user can retry. Each new action clears the previous error.
-- This is why the backend setting `server.error.include-binding-errors=always` matters: it is what puts the validation text in the response.
 
 ### Root runner
 

@@ -7,6 +7,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.example.interview.exception.IdeaNotFoundException;
 import com.example.interview.model.Idea;
 import com.example.interview.repository.IdeaRepository;
 import java.util.List;
@@ -66,8 +67,8 @@ class IdeaServiceTest {
         when(repository.incrementVotes(99L)).thenReturn(0);
 
         assertThatThrownBy(() -> service.vote(99L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Idea not found.");
+                .isInstanceOf(IdeaNotFoundException.class)
+                .hasMessage("Idea 99 not found.");
         verify(repository, never()).findById(anyLong());
     }
 
@@ -77,8 +78,8 @@ class IdeaServiceTest {
         when(repository.findById(7L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.vote(7L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Idea not found.");
+                .isInstanceOf(IdeaNotFoundException.class)
+                .hasMessage("Idea 7 not found.");
     }
 
     private static Idea idea(String title) {
