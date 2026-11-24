@@ -14,13 +14,19 @@ interview-starter/
     ├── tsconfig.json             TypeScript settings (strict)
     └── src/
         ├── main.tsx              JavaScript entry: mounts React
-        ├── App.tsx               The one component: form, list, state
-        ├── api.ts                All fetch calls to the backend
-        ├── types.ts              TypeScript types mirroring backend entities
+        ├── App.tsx               Page shell, renders IdeaView
+        ├── api/
+        │   ├── http.ts           Generic request<T>() fetch helper
+        │   └── ideaApi.ts        All idea calls to the backend
+        ├── component/
+        │   ├── IdeaView.tsx      Form, state, and submit/vote handlers
+        │   ├── IdeaList.tsx      Renders the list of ideas
+        │   └── IdeaCard.tsx      Renders one idea with its vote button
+        ├── types/ideaTypes.ts    TypeScript types mirroring the backend entity
         └── styles.css            Global styles
 ```
 
-The split is intentional. **`App.tsx`** owns UI and state, **`api.ts`** owns network calls, and **`types.ts`** owns the data shapes. Components never call `fetch` directly, which keeps them easy to read and easy to change when the API changes.
+The split is intentional. **Components** own UI and state, **`api/`** owns network calls, and **`types/`** owns the data shapes. Components never call `fetch` directly, which keeps them easy to read and easy to change when the API changes.
 
 ## 2. Entry points
 
@@ -34,7 +40,7 @@ Imports `App` and the stylesheet, then calls React 18's `createRoot(document.get
 
 ### Application entry: `src/App.tsx`
 
-The root component. It fetches items on mount, holds form state, handles submit, and renders the list.
+The root component. It renders the page heading and `IdeaView`, which fetches ideas on mount, holds form state, handles submit and voting, and renders the list.
 
 ### Developer entry: npm scripts
 
@@ -44,21 +50,27 @@ The root component. It fetches items on mount, holds form state, handles submit,
 | `npm run dev` | repo root | Starts Spring Boot and Vite together via `concurrently` |
 | `npm run dev` | `frontend/` | Starts only the Vite dev server on port 5173 |
 | `npm run build` | `frontend/` | Type-checks with `tsc --noEmit`, then builds to `dist/` |
+| `npm test` | `frontend/` | Runs the Vitest unit tests once (`npm run test:watch` for watch mode) |
+
+### Tests
+
+Tests use **Vitest** (configured in the `test` block of `vite.config.ts`) with **React Testing Library** in a jsdom environment. Test files sit next to the code they cover as `*.test.ts(x)`. `src/test/setup.ts` adds the jest-dom matchers and cleans up after each test, and `src/test/fixtures.ts` has `makeIdea()` and `jsonResponse()` helpers. API tests stub the global `fetch`. `IdeaView` tests mock the `ideaApi` module with `vi.mock`.
 
 ## 3. How the pieces connect to the frameworks
 
 ### React
 
-- **State.** `App` uses `useState` for `items`, `title`, `description`, `error`, and `loading`. Form inputs are controlled: each one's `value` comes from state and `onChange` updates it.
-- **Loading data.** `useEffect(..., [])` runs once after the first render and calls `listItems()`. The `.finally()` clears the loading flag whether the call worked or failed.
-- **Submitting.** `handleSubmit` calls `preventDefault()`, clears any old error, awaits `createItem(...)`, then prepends the saved item to `items` and resets the form. The list updates from the server's response, so the UI shows what was actually stored.
-- **Rendering.** `items.map(...)` renders the list, using `id` as the `key`.
+- **State.** `IdeaView` uses `useState` for `ideas`, `title`, `description`, and `error`. Form inputs are controlled: each one's `value` comes from state and `onChange` updates it.
+- **Loading data.** `useEffect(..., [])` runs once after the first render and calls `ideaApi.listIdeas()`.
+- **Submitting.** `handleSubmit` calls `preventDefault()`, clears any old error, awaits `ideaApi.createIdea(...)`, then reloads the list and resets the form. The list comes from the server's response, so the UI shows what was actually stored.
+- **Voting.** `handleVote` calls `ideaApi.upvote(id)` and reloads the list.
+- **Rendering.** `IdeaList` maps over `ideas` and renders an `IdeaCard` for each, using `id` as the `key`.
 
 ### TypeScript
 
 - `tsconfig.json` has `strict: true`, `jsx: react-jsx` (no need to import React in each file), and `noEmit` because Vite does the compiling and `tsc` is only used for checking.
-- `types.ts` defines `Item` and `NewItem`. These must be kept in sync by hand with `Item.java`. If the backend adds a field, add it here first and the compiler will point to every place that needs to change.
-- `api.ts` uses a generic helper, `request<T>()`, so each exported function states its return type, for example `listItems = () => request<Item[]>('/api/items')`.
+- `types/ideaTypes.ts` defines `Idea` and `NewIdea`. These must be kept in sync by hand with `Idea.java`. If the backend adds a field, add it here first and the compiler will point to every place that needs to change.
+- `api/http.ts` provides a generic helper, `request<T>()`, so each function in `ideaApi.ts` states its return type, for example `listIdeas = () => request<Idea[]>('/api/ideas')`.
 
 ### Vite
 
@@ -70,17 +82,17 @@ The root component. It fetches items on mount, holds form state, handles submit,
 The browser only ever talks to Vite on port 5173. Vite's `server.proxy` forwards anything starting with `/api` to `http://localhost:8080`:
 
 ```
-Browser  →  http://localhost:5173/api/items
-  Vite proxy  →  http://localhost:8080/api/items
+Browser  →  http://localhost:5173/api/ideas
+  Vite proxy  →  http://localhost:8080/api/ideas
   Spring Boot  →  JSON response  →  back to the browser
 ```
 
-Because the browser sees one origin, **no CORS configuration is needed** on the backend. Code calls relative URLs such as `/api/items`, never a hard-coded host.
+Because the browser sees one origin, **no CORS configuration is needed** on the backend. Code calls relative URLs such as `/api/ideas`, never a hard-coded host.
 
 ### Error handling path
 
-- `request()` in `api.ts` checks `res.ok`. On failure it tries to parse the JSON error body and throws an `Error` using the first validation message (`errors[0].defaultMessage`), then `message`, then a generic status string.
-- `App` catches the error and stores its message in `error`, which renders in a red block above the button.
+- `request()` in `api/http.ts` checks `res.ok`. On failure it tries to parse the JSON error body and throws an `Error` using the first validation message (`errors[0].defaultMessage`), then `message`, then a generic status string.
+- `IdeaView` catches failures from loading, submitting and voting, and stores the message in `error`, which renders in a red block (`role="alert"`) above the button. A blank title is rejected before any request is sent. If create fails, the form keeps its values so the user can retry. Each new action clears the previous error.
 - This is why the backend setting `server.error.include-binding-errors=always` matters: it is what puts the validation text in the response.
 
 ### Root runner
@@ -91,16 +103,16 @@ The root `package.json` depends on `concurrently` and defines `dev` as two proce
 
 | Task | Where to change |
 | --- | --- |
-| New field in the form | `types.ts`, `App.tsx` state and inputs, and the Java entity |
-| New API call | Add a typed function in `api.ts`, call it from a component |
-| Split the UI | Extract `ItemForm.tsx` and `ItemList.tsx` from `App.tsx`, passing props and callbacks |
+| New field in the form | `types/ideaTypes.ts`, `IdeaView.tsx` state and inputs, and the Java entity |
+| New API call | Add a typed function in `api/ideaApi.ts`, call it from a component |
+| Split the UI further | Extract an `IdeaForm.tsx` from `IdeaView.tsx`, passing props and callbacks |
 | Client-side validation | Check values in `handleSubmit` before calling the API, and set `error` |
 | Multiple pages | Add `react-router-dom` and move `App` content into route components |
 | Different styling | Edit `styles.css`, or add a CSS library through npm |
 
 ## 5. Talking points and tradeoffs
 
-- **Single component.** Everything lives in `App.tsx` to start fast. State logic can move into a custom hook such as `useItems()` once there is more than one screen.
+- **State in one view.** All idea state lives in `IdeaView`. It can move into a custom hook such as `useIdeas()` once there is more than one screen.
 - **Local state only.** `useState` is enough here. A library like React Query would add caching, retries, and refetching if the app grew.
 - **Optimistic vs confirmed updates.** The list updates after the server responds. That is simple and always correct, at the cost of a short delay.
 - **Hand-written types.** They can drift from the backend. Generating types from an OpenAPI spec solves this and is a good answer if asked about scaling.

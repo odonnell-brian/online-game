@@ -10,15 +10,16 @@ interview-starter/
 ├── data/                                H2 database files (created at first run)
 └── src/main/
     ├── java/com/example/interview/
-    │   ├── InterviewApplication.java    Entry point
-    │   ├── Item.java                    JPA entity and validation rules
-    │   ├── ItemRepository.java          Data access interface
-    │   └── ItemApiController.java       REST endpoints
+    │   ├── InterviewApplication.java          Entry point
+    │   ├── model/Idea.java                    JPA entity and validation rules
+    │   ├── repository/IdeaRepository.java     Data access interface
+    │   ├── service/IdeaService.java           Business logic
+    │   └── controller/IdeaApiController.java  REST endpoints
     └── resources/
         └── application.properties       Datasource, JPA, error settings
 ```
 
-The layering is deliberately thin: **Controller → Repository → Database**. There is no service layer yet. Add one when real business logic appears, so controllers stay about HTTP and repositories stay about persistence.
+The layering is **Controller → Service → Repository → Database**. Controllers stay about HTTP, the service holds business logic (such as voting), and repositories stay about persistence.
 
 ## 2. Entry points
 
@@ -30,12 +31,13 @@ The layering is deliberately thin: **Controller → Repository → Database**. T
 - **`@EnableAutoConfiguration`** inspects the classpath and configures beans for you. Because `spring-boot-starter-web` is present you get an embedded Tomcat and `DispatcherServlet`. Because `spring-boot-starter-data-jpa` and `h2` are present you get a `DataSource`, Hibernate, and a transaction manager.
 - **`@Configuration`** lets the class itself define beans if you need to.
 
-### HTTP entry: `ItemApiController`
+### HTTP entry: `IdeaApiController`
 
 | Method | Path | Behavior |
 | --- | --- | --- |
-| GET | `/api/items` | Returns all items as JSON |
-| POST | `/api/items` | Validates the body, saves, returns the saved item with status 201 |
+| GET | `/api/ideas` | Returns all ideas as JSON |
+| POST | `/api/ideas` | Validates the body, saves, returns the saved idea with status 201 |
+| POST | `/api/ideas/{id}/vote` | Adds one vote and returns the updated idea |
 
 ### Operational entry: H2 console
 
@@ -49,10 +51,11 @@ The layering is deliberately thin: **Controller → Repository → Database**. T
 HTTP request
   → embedded Tomcat
   → DispatcherServlet (Spring MVC)
-  → ItemApiController (matched by @RequestMapping)
-  → Jackson deserializes JSON body into Item
+  → IdeaApiController (matched by @RequestMapping)
+  → Jackson deserializes JSON body into Idea
   → Bean Validation runs because of @Valid
-  → ItemRepository.save()   (Spring Data JPA proxy)
+  → IdeaService
+  → IdeaRepository.save()   (Spring Data JPA proxy)
   → Hibernate generates SQL
   → H2 via JDBC
   → Jackson serializes the result back to JSON
@@ -61,8 +64,8 @@ HTTP request
 ### Spring MVC (`spring-boot-starter-web`)
 
 - `@RestController` marks the class as a controller whose return values are written straight to the response body, not resolved as view names.
-- `@RequestMapping("/api/items")` sets the base path, with `@GetMapping` and `@PostMapping` for the methods.
-- `@RequestBody` tells MVC to deserialize the JSON body into an `Item` using Jackson.
+- `@RequestMapping("/api/ideas")` sets the base path, with `@GetMapping` and `@PostMapping` for the methods.
+- `@RequestBody` tells MVC to deserialize the JSON body into an `Idea` using Jackson.
 - `@ResponseStatus(HttpStatus.CREATED)` sets the 201 on create.
 
 ### Bean Validation (`spring-boot-starter-validation`)
@@ -73,9 +76,9 @@ HTTP request
 
 ### Spring Data JPA and Hibernate (`spring-boot-starter-data-jpa`)
 
-- `ItemRepository extends JpaRepository<Item, Long>` is only an interface. Spring generates the implementation at startup, giving you `save`, `findAll`, `findById`, `deleteById`, and so on.
-- Custom queries can be added as derived methods, for example `List<Item> findByTitleContainingIgnoreCase(String q)`, with no SQL needed.
-- `Item` is mapped with `@Entity`. The id uses `@GeneratedValue(strategy = IDENTITY)`, so the database assigns it. `createdAt` is initialized when the object is constructed.
+- `IdeaRepository extends JpaRepository<Idea, Long>` is only an interface. Spring generates the implementation at startup, giving you `save`, `findAll`, `findById`, `deleteById`, and so on.
+- Custom queries can be added as derived methods, for example `List<Idea> findByTitleContainingIgnoreCase(String q)`, with no SQL needed.
+- `Idea` is mapped with `@Entity`. The id uses `@GeneratedValue(strategy = IDENTITY)`, so the database assigns it. `createdAt` is initialized when the object is constructed.
 - `spring.jpa.hibernate.ddl-auto=update` makes Hibernate create or alter tables from the entity on startup. That is convenient for an interview and not appropriate for production, where you would use migrations (Flyway or Liquibase).
 - `spring.jpa.open-in-view=false` keeps the Hibernate session from staying open during view rendering. It is the safer default for an API.
 
@@ -94,17 +97,17 @@ HTTP request
 
 | Task | Where to change |
 | --- | --- |
-| Add or rename a field | `Item.java` (Hibernate updates the table), then `frontend/src/types.ts` |
+| Add or rename a field | `Idea.java` (Hibernate updates the table), then `frontend/src/types/ideaTypes.ts` |
 | New resource | New `@Entity`, a repository interface, and a controller in the same package tree |
 | Another endpoint | Add a method to the controller, for example `@GetMapping("/{id}")` or `@DeleteMapping("/{id}")` |
-| Business logic | Add a `@Service` class, inject it into the controller by constructor, and have it call the repository |
+| Business logic | Add a method to `IdeaService` and call it from the controller |
 | Consistent error responses | Add a `@RestControllerAdvice` with `@ExceptionHandler` methods |
 | Different database | `pom.xml` dependency plus `application.properties` |
 
 ## 5. Talking points and tradeoffs
 
-- **Entity as API model.** `Item` is used directly for requests and responses. This is fast to build, but it couples the API to the schema and lets clients send fields like `id` or `createdAt`. The usual next step is request and response DTOs (Java records work well).
+- **Entity as API model.** `Idea` is used directly for requests and responses. This is fast to build, but it couples the API to the schema and lets clients send fields like `id` or `createdAt`. The usual next step is request and response DTOs (Java records work well).
 - **No pagination.** `findAll()` returns everything. Switch to `Pageable` if the list could grow.
-- **Constructor injection.** The controller takes its repository through the constructor, which keeps it easy to test with a mock.
+- **Constructor injection.** The controller takes its service, and the service its repository, through the constructor, which keeps it easy to test with a mock.
 - **Testing options.** `@DataJpaTest` for repository behavior, `@WebMvcTest` with `MockMvc` for controller and validation behavior.
 - **Security and CORS.** Neither is configured. In dev the Vite proxy avoids CORS. For a deployed split frontend you would add CORS configuration or serve the built frontend from Spring's `static` folder.

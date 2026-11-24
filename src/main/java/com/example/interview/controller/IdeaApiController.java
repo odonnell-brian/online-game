@@ -23,8 +23,8 @@ public class IdeaApiController {
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  public Idea create(@Valid @RequestBody Idea item) {
-    return ideaService.createIdea(item);
+  public Idea create(@Valid @RequestBody Idea idea) {
+    return ideaService.createIdea(idea);
   }
 
   @PostMapping("/{id}/vote")

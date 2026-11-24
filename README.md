@@ -52,19 +52,20 @@ npm install
 npm run dev
 ```
 
-Vite proxies any request starting with `/api` to the backend at `http://127.0.0.1:8080`, so no CORS setup is needed. Always call the API with relative URLs (for example `/api/items`).
+Vite proxies any request starting with `/api` to the backend at `http://127.0.0.1:8080`, so no CORS setup is needed. Always call the API with relative URLs (for example `/api/ideas`).
 
 ## Verify it works
 
 1. Open http://localhost:5173.
-2. Add an item with a title. It should appear in the list.
-3. Submit with an empty title. A validation error should show.
-4. Refresh the page. Your items should still be there, which confirms they are stored in the database.
+2. Add an idea with a title. It should appear in the list.
+3. Vote on an idea. Its vote count should go up.
+4. Refresh the page. Your ideas should still be there, which confirms they are stored in the database.
 
 You can also hit the API directly:
 
-- `GET http://localhost:8080/api/items` returns all items as JSON
-- `POST http://localhost:8080/api/items` creates an item (`Content-Type: application/json`, body `{"title":"x","description":""}`)
+- `GET http://localhost:8080/api/ideas` returns all ideas as JSON
+- `POST http://localhost:8080/api/ideas` creates an idea (`Content-Type: application/json`, body `{"title":"x","description":""}`)
+- `POST http://localhost:8080/api/ideas/{id}/vote` adds a vote to an idea
 
 ## Database
 
@@ -96,10 +97,11 @@ spring.datasource.url=jdbc:h2:mem:interview;DB_CLOSE_DELAY=-1
 ├── package.json                 Root scripts: setup and dev
 ├── src/main/
 │   ├── java/com/example/interview/
-│   │   ├── InterviewApplication.java   Backend entry point
-│   │   ├── Item.java                   JPA entity + validation rules
-│   │   ├── ItemRepository.java         Spring Data repository
-│   │   └── ItemApiController.java      REST endpoints (/api/items)
+│   │   ├── InterviewApplication.java          Backend entry point
+│   │   ├── model/Idea.java                    JPA entity + validation rules
+│   │   ├── repository/IdeaRepository.java     Spring Data repository
+│   │   ├── service/IdeaService.java           Business logic (create, vote)
+│   │   └── controller/IdeaApiController.java  REST endpoints (/api/ideas)
 │   └── resources/application.properties
 └── frontend/
     ├── index.html               Browser entry
@@ -107,13 +109,14 @@ spring.datasource.url=jdbc:h2:mem:interview;DB_CLOSE_DELAY=-1
     ├── tsconfig.json
     └── src/
         ├── main.tsx             Mounts React
-        ├── App.tsx              Form, list, and state
-        ├── api.ts               All calls to the backend
-        ├── types.ts             Types mirroring backend entities
+        ├── App.tsx              Page shell
+        ├── api/                 http.ts (fetch helper), ideaApi.ts (backend calls)
+        ├── component/           IdeaView (form + state), IdeaList, IdeaCard
+        ├── types/ideaTypes.ts   Types mirroring the backend entity
         └── styles.css
 ```
 
-When you change the `Item` entity, update `frontend/src/types.ts` to match.
+When you change the `Idea` entity, update `frontend/src/types/ideaTypes.ts` to match.
 
 ## Useful commands
 
@@ -124,6 +127,7 @@ When you change the `Item` entity, update `frontend/src/types.ts` to match.
 | `mvn spring-boot:run` | root | Run only the backend |
 | `mvn test` | root | Run backend tests |
 | `npm run dev` | `frontend/` | Run only the frontend |
+| `npm test` | `frontend/` | Run frontend unit tests once (`npm run test:watch` to re-run on save) |
 | `npm run build` | `frontend/` | Type-check and build to `frontend/dist/` |
 
 ## Troubleshooting

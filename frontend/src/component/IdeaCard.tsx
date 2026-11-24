@@ -10,13 +10,15 @@ export function IdeaCard(props: IdeaProps) {
 
   return (
     <>
-      <strong>{idea.title}</strong>
-      <div>{idea.description}</div>
-      <div className="idea-footer">
+      <div className="idea-body">
+        <strong>{idea.title}</strong>
+        {idea.description && <p>{idea.description}</p>}
+        <small>{new Date(idea.createdAt).toLocaleString()}</small>
+      </div>
+      <div className="idea-votes">
         <span>Votes: {idea.votes}</span>
         <button onClick={() => props.onVote(idea.id)}>Upvote</button>
       </div>
-      <small>{new Date(idea.createdAt).toLocaleString()}</small>
     </>
   );
 }

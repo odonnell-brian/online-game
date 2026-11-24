@@ -24,7 +24,7 @@ public class Idea {
 
   private int votes;
 
-  private Instant createdAt = Instant.now();
+  private final Instant createdAt = Instant.now();
 
   public Long getId() {
     return id;
