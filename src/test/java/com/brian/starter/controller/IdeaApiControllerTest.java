@@ -1,5 +1,6 @@
 package com.brian.starter.controller;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
@@ -15,8 +16,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.brian.starter.exception.IdeaNotFoundException;
 import com.brian.starter.model.Idea;
+import com.brian.starter.model.IdeaStatus;
 import com.brian.starter.service.IdeaService;
-import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -24,6 +26,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
 
 @WebMvcTest(IdeaApiController.class)
 class IdeaApiControllerTest {
@@ -155,11 +159,92 @@ class IdeaApiControllerTest {
                 .andExpect(content().string(not(containsString("hunter2"))));
     }
 
+    @Test
+    void list_includesStatusAndAllowedActions() throws Exception {
+        when(ideaService.getIdeas()).thenReturn(List.of(idea(1L, "Open idea", 0)));
+
+        mvc.perform(get("/api/ideas"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].status").value("OPEN"))
+                .andExpect(
+                        jsonPath("$[0].allowedStatuses", containsInAnyOrder("PLANNED", "DONE", "CLOSED")))
+                .andExpect(jsonPath("$[0].votable").value(true));
+    }
+
+    @Test
+    void changeStatus_returnsUpdatedIdea() throws Exception {
+        when(ideaService.changeStatus(4L, IdeaStatus.PLANNED))
+                .thenReturn(idea(4L, "Planned idea", 2, IdeaStatus.PLANNED));
+
+        mvc.perform(
+                        post("/api/ideas/4/status")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"status\":\"PLANNED\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(4))
+                .andExpect(jsonPath("$.status").value("PLANNED"))
+                .andExpect(jsonPath("$.allowedStatuses", containsInAnyOrder("DONE", "CLOSED")));
+
+        verify(ideaService).changeStatus(4L, IdeaStatus.PLANNED);
+    }
+
+    @Test
+    void changeStatus_missingStatusReturns400WithFieldError() throws Exception {
+        mvc.perform(
+                        post("/api/ideas/4/status")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("status"))
+                .andExpect(jsonPath("$.errors[0].message").value("must not be null"));
+
+        verifyNoInteractions(ideaService);
+    }
+
+    @Test
+    void changeStatus_unknownStatusValueReturns400() throws Exception {
+        mvc.perform(
+                        post("/api/ideas/4/status")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"status\":\"BOGUS\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+
+        verifyNoInteractions(ideaService);
+    }
+
+    @Test
+    void changeStatus_unknownIdReturns404() throws Exception {
+        when(ideaService.changeStatus(99L, IdeaStatus.DONE))
+                .thenThrow(new IdeaNotFoundException(99L));
+
+        mvc.perform(
+                        post("/api/ideas/99/status")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"status\":\"DONE\"}"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void allowedStatuses_returnsTransitionMap() throws Exception {
+        mvc.perform(get("/api/ideas/allowedStatuses"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.OPEN", containsInAnyOrder("PLANNED", "DONE", "CLOSED")))
+                .andExpect(jsonPath("$.PLANNED", containsInAnyOrder("DONE", "CLOSED")))
+                .andExpect(jsonPath("$.DONE", hasSize(0)))
+                .andExpect(jsonPath("$.CLOSED", hasSize(0)));
+    }
+
     private static Idea idea(Long id, String title, int votes) {
+        return idea(id, title, votes, IdeaStatus.OPEN);
+    }
+
+    private static Idea idea(Long id, String title, int votes, IdeaStatus status) {
         Idea idea = new Idea();
         ReflectionTestUtils.setField(idea, "id", id);
         idea.setTitle(title);
         idea.setVotes(votes);
+        idea.setStatus(status);
         return idea;
     }
 }

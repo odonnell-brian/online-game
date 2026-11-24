@@ -2,16 +2,14 @@ package com.brian.starter.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.brian.starter.exception.IdeaNotFoundException;
 import com.brian.starter.model.Idea;
+import com.brian.starter.model.IdeaStatus;
 import com.brian.starter.repository.IdeaRepository;
-import java.util.List;
-import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -20,8 +18,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Sort;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 @ExtendWith(MockitoExtension.class)
 class IdeaServiceTest {
+
+    private static final Set<IdeaStatus> VOTABLE = IdeaStatus.getNonTerminalStatuses();
 
     @Mock private IdeaRepository repository;
 
@@ -52,29 +56,40 @@ class IdeaServiceTest {
     }
 
     @Test
-    void vote_incrementsAndReturnsUpdatedIdea() {
+    void vote_incrementsOnlyNonTerminalIdeasAndReturnsUpdatedIdea() {
         Idea updated = idea("Voted");
         updated.setVotes(1);
-        when(repository.incrementVotes(5L)).thenReturn(1);
+        when(repository.incrementVotes(5L, VOTABLE)).thenReturn(1);
         when(repository.findById(5L)).thenReturn(Optional.of(updated));
 
         assertThat(service.vote(5L)).isSameAs(updated);
-        verify(repository).incrementVotes(5L);
+        verify(repository).incrementVotes(5L, VOTABLE);
     }
 
     @Test
-    void vote_throwsWhenNoRowUpdated() {
-        when(repository.incrementVotes(99L)).thenReturn(0);
+    void vote_throwsNotFoundWhenNoRowUpdatedAndIdeaMissing() {
+        when(repository.incrementVotes(99L, VOTABLE)).thenReturn(0);
+        when(repository.existsById(99L)).thenReturn(false);
 
         assertThatThrownBy(() -> service.vote(99L))
                 .isInstanceOf(IdeaNotFoundException.class)
                 .hasMessage("Idea 99 not found.");
-        verify(repository, never()).findById(anyLong());
+    }
+
+    @Test
+    void vote_rejectsTerminalIdeaWhenNoRowUpdated() {
+        when(repository.incrementVotes(3L, VOTABLE)).thenReturn(0);
+        when(repository.existsById(3L)).thenReturn(true);
+
+        // TODO: switch to the 409 exception once it exists
+        assertThatThrownBy(() -> service.vote(3L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Idea no longer votable.");
     }
 
     @Test
     void vote_throwsWhenIdeaDisappearsAfterUpdate() {
-        when(repository.incrementVotes(7L)).thenReturn(1);
+        when(repository.incrementVotes(7L, VOTABLE)).thenReturn(1);
         when(repository.findById(7L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.vote(7L))

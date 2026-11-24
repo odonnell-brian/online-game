@@ -1,7 +1,5 @@
 package com.brian.starter.exception;
 
-import java.util.List;
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -15,12 +13,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.util.List;
+import java.util.Objects;
+
 /**
  * Maps exceptions to RFC 9457 problem responses ({@code application/problem+json}).
  *
  * <p>The base class already maps Spring MVC's own exceptions (malformed JSON, wrong method, type
- * mismatches, unknown routes) to the right 4xx status. This class adds the app's exceptions,
- * a field list for validation failures, and a safe catch-all for anything unexpected.
+ * mismatches, unknown routes) to the right 4xx status. This class adds the app's exceptions, a
+ * field list for validation failures, and a safe catch-all for anything unexpected.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -32,7 +33,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(IdeaNotFoundException.class)
     public ProblemDetail handleIdeaNotFound(IdeaNotFoundException ex) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problem.setTitle("Idea not found");
         return problem;
     }
@@ -45,12 +47,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             WebRequest request) {
         List<FieldViolation> errors =
                 ex.getFieldErrors().stream()
-                        .map(
-                                fe ->
-                                        new FieldViolation(
-                                                fe.getField(),
-                                                Objects.requireNonNullElse(
-                                                        fe.getDefaultMessage(), "is invalid")))
+                        .map(fe ->
+                                new FieldViolation(
+                                        fe.getField(),
+                                        Objects.requireNonNullElse(
+                                                fe.getDefaultMessage(), "is invalid")))
                         .toList();
 
         ProblemDetail problem = ex.getBody();

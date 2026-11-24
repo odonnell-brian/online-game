@@ -2,7 +2,9 @@ package com.brian.starter.service;
 
 import com.brian.starter.exception.IdeaNotFoundException;
 import com.brian.starter.model.Idea;
+import com.brian.starter.model.IdeaStatus;
 import com.brian.starter.repository.IdeaRepository;
+
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,10 +30,24 @@ public class IdeaService {
 
     @Transactional
     public Idea vote(long id) {
-        if (repository.incrementVotes(id) == 0) {
-            throw new IdeaNotFoundException(id);
+        if (repository.incrementVotes(id, IdeaStatus.getNonTerminalStatuses()) == 0) {
+            if (!repository.existsById(id)) throw new IdeaNotFoundException(id);
+            else throw new IllegalArgumentException("Idea no longer votable.");
         }
 
         return repository.findById(id).orElseThrow(() -> new IdeaNotFoundException(id));
+    }
+
+    @Transactional
+    public Idea changeStatus(long id, IdeaStatus newStatus) {
+        Idea idea = repository.findById(id).orElseThrow(() -> new IdeaNotFoundException(id));
+
+        if (!idea.getStatus().isAllowedNextStatus(newStatus)) {
+            throw new IllegalArgumentException("Invalid status transition.");
+        }
+
+        idea.setStatus(newStatus);
+        repository.save(idea);
+        return idea;
     }
 }

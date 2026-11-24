@@ -1,11 +1,11 @@
 package com.brian.starter.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
+import org.hibernate.annotations.ColumnDefault;
+
 import java.time.Instant;
 
 @Entity
@@ -25,6 +25,11 @@ public class Idea {
     private int votes;
 
     private Instant createdAt = Instant.now();
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @ColumnDefault("'OPEN'")
+    private IdeaStatus status = IdeaStatus.OPEN;
 
     public Long getId() {
         return id;
@@ -56,5 +61,13 @@ public class Idea {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public void setStatus(IdeaStatus status) {
+        this.status = status;
+    }
+
+    public IdeaStatus getStatus() {
+        return status;
     }
 }
