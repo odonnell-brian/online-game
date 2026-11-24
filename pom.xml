@@ -13,6 +13,8 @@
   <version>0.0.1</version>
   <properties>
     <java.version>17</java.version>
+    <!-- Newer Byte Buddy so Mockito can mock classes when running on JDK 25+ -->
+    <byte-buddy.version>1.17.8</byte-buddy.version>
   </properties>
   <dependencies>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>

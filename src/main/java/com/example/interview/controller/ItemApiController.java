@@ -1,5 +1,7 @@
-package com.example.interview;
+package com.example.interview.controller;
 
+import com.example.interview.repository.ItemRepository;
+import com.example.interview.model.Item;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
