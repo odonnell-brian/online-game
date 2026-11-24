@@ -11,5 +11,4 @@ public interface IdeaRepository extends JpaRepository<Idea, Long> {
     @Modifying
     @Query("update Idea i set i.votes = i.votes + 1 where i.id = :id")
     int incrementVotes(@Param("id") Long id);
-
 }

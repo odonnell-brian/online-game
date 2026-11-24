@@ -11,28 +11,28 @@ import java.util.List;
 @Service
 public class IdeaService {
 
-  private final IdeaRepository repository;
+    private final IdeaRepository repository;
 
-  public IdeaService(IdeaRepository repository) {
-    this.repository = repository;
-  }
-
-  public List<Idea> getIdeas() {
-    return repository.findAll(Sort.by(Sort.Order.desc("votes"), Sort.Order.asc("createdAt")));
-  }
-
-  public Idea createIdea(Idea idea) {
-    return repository.save(idea);
-  }
-
-  @Transactional
-  public Idea vote(long id) {
-    if (repository.incrementVotes(id) == 0) {
-      throw new IllegalArgumentException("Idea not found.");
+    public IdeaService(IdeaRepository repository) {
+        this.repository = repository;
     }
 
-    return repository
-        .findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("Idea not found."));
-  }
+    public List<Idea> getIdeas() {
+        return repository.findAll(Sort.by(Sort.Order.desc("votes"), Sort.Order.asc("createdAt")));
+    }
+
+    public Idea createIdea(Idea idea) {
+        return repository.save(idea);
+    }
+
+    @Transactional
+    public Idea vote(long id) {
+        if (repository.incrementVotes(id) == 0) {
+            throw new IllegalArgumentException("Idea not found.");
+        }
+
+        return repository
+                .findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Idea not found."));
+    }
 }
