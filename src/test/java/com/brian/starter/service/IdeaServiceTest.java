@@ -1,4 +1,4 @@
-package com.example.interview.service;
+package com.brian.starter.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -7,9 +7,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.example.interview.exception.IdeaNotFoundException;
-import com.example.interview.model.Idea;
-import com.example.interview.repository.IdeaRepository;
+import com.brian.starter.exception.IdeaNotFoundException;
+import com.brian.starter.model.Idea;
+import com.brian.starter.repository.IdeaRepository;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;

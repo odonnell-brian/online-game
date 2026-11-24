@@ -1,6 +1,6 @@
-package com.example.interview.repository;
+package com.brian.starter.repository;
 
-import com.example.interview.model.Idea;
+import com.brian.starter.model.Idea;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

@@ -1,8 +1,8 @@
-package com.example.interview.service;
+package com.brian.starter.service;
 
-import com.example.interview.exception.IdeaNotFoundException;
-import com.example.interview.model.Idea;
-import com.example.interview.repository.IdeaRepository;
+import com.brian.starter.exception.IdeaNotFoundException;
+import com.brian.starter.model.Idea;
+import com.brian.starter.repository.IdeaRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

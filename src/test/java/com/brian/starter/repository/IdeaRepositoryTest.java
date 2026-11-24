@@ -1,8 +1,8 @@
-package com.example.interview.repository;
+package com.brian.starter.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.example.interview.model.Idea;
+import com.brian.starter.model.Idea;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;

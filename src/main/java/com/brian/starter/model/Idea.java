@@ -1,4 +1,4 @@
-package com.example.interview.model;
+package com.brian.starter.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -24,7 +24,7 @@ public class Idea {
 
     private int votes;
 
-    private final Instant createdAt = Instant.now();
+    private Instant createdAt = Instant.now();
 
     public Long getId() {
         return id;

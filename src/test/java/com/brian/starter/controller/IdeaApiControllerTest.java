@@ -1,4 +1,4 @@
-package com.example.interview.controller;
+package com.brian.starter.controller;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
@@ -13,9 +13,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.example.interview.exception.IdeaNotFoundException;
-import com.example.interview.model.Idea;
-import com.example.interview.service.IdeaService;
+import com.brian.starter.exception.IdeaNotFoundException;
+import com.brian.starter.model.Idea;
+import com.brian.starter.service.IdeaService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

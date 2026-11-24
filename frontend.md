@@ -5,7 +5,7 @@ A single-page app built with React 18, TypeScript (strict mode), and Vite 5. It 
 ## 1. General structure
 
 ```
-interview-starter/
+starter-app/
 ├── package.json                  Root runner: npm run setup / npm run dev
 └── frontend/
     ├── package.json              Frontend dependencies and scripts
@@ -98,7 +98,7 @@ Because the browser sees one origin, **no CORS configuration is needed** on the 
 
 The root `package.json` depends on `concurrently` and defines `dev` as two processes: `mvn spring-boot:run` (labelled `api`) and `npm --prefix frontend run dev` (labelled `web`).
 
-## 4. Common changes during the interview
+## 4. Common changes
 
 | Task | Where to change |
 | --- | --- |
@@ -116,4 +116,4 @@ The root `package.json` depends on `concurrently` and defines `dev` as two proce
 - **Optimistic vs confirmed updates.** The list updates after the server responds. That is simple and always correct, at the cost of a short delay.
 - **Hand-written types.** They can drift from the backend. Generating types from an OpenAPI spec solves this and is a good answer if asked about scaling.
 - **Production serving.** Run `npm run build` in `frontend/` and copy `dist/` into the backend's `src/main/resources/static/` so Spring serves the app itself. Alternatively, deploy the frontend separately and add CORS to the backend.
-- **Accessibility and UX gaps to mention.** There is no disabled state while submitting, no empty-list message, and no inline field-level errors. All are quick wins if the interviewer asks.
+- **Accessibility and UX gaps to mention.** There is no disabled state while submitting, no empty-list message, and no inline field-level errors. All are quick wins.

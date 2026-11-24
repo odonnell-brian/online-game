@@ -1,4 +1,4 @@
-package com.example.interview.exception;
+package com.brian.starter.exception;
 
 /** Thrown when an idea with the requested id does not exist. Mapped to 404. */
 public class IdeaNotFoundException extends RuntimeException {

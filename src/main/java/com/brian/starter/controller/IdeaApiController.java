@@ -1,7 +1,7 @@
-package com.example.interview.controller;
+package com.brian.starter.controller;
 
-import com.example.interview.model.Idea;
-import com.example.interview.service.IdeaService;
+import com.brian.starter.model.Idea;
+import com.brian.starter.service.IdeaService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;

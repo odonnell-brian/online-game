@@ -1,4 +1,4 @@
-# Interview Starter
+# Starter App
 
 A small full-stack starter: a **Spring Boot 3** JSON API with a **React + TypeScript** frontend (built with Vite) and an **H2** file database.
 
@@ -42,7 +42,7 @@ Either use Maven:
 mvn spring-boot:run
 ```
 
-or open the project folder in IntelliJ (File > Open, choose the folder with `pom.xml`), let Maven finish importing, then run `InterviewApplication` with the green arrow next to `main`.
+or open the project folder in IntelliJ (File > Open, choose the folder with `pom.xml`), let Maven finish importing, then run `StarterApplication` with the green arrow next to `main`.
 
 ### Frontend (port 5173)
 
@@ -69,10 +69,10 @@ You can also hit the API directly:
 
 ## Database
 
-H2 runs inside the backend process and stores data in `./data/interview` (created on first run, ignored by git).
+H2 runs inside the backend process and stores data in `./data/starter` (created on first run, ignored by git).
 
 - Console: http://localhost:8080/h2-console
-- JDBC URL: `jdbc:h2:file:./data/interview`
+- JDBC URL: `jdbc:h2:file:./data/starter`
 - User: `sa`, password: blank
 
 To reset the data, stop the backend and delete the `data/` folder.
@@ -80,7 +80,7 @@ To reset the data, stop the backend and delete the `data/` folder.
 To use an in-memory database instead (data resets on every restart), set this in `src/main/resources/application.properties`:
 
 ```properties
-spring.datasource.url=jdbc:h2:mem:interview;DB_CLOSE_DELAY=-1
+spring.datasource.url=jdbc:h2:mem:starter;DB_CLOSE_DELAY=-1
 ```
 
 ### Switching to Postgres (optional)
@@ -96,8 +96,8 @@ spring.datasource.url=jdbc:h2:mem:interview;DB_CLOSE_DELAY=-1
 ├── pom.xml                      Maven build and backend dependencies
 ├── package.json                 Root scripts: setup and dev
 ├── src/main/
-│   ├── java/com/example/interview/
-│   │   ├── InterviewApplication.java          Backend entry point
+│   ├── java/com/brian/starter/
+│   │   ├── StarterApplication.java          Backend entry point
 │   │   ├── model/Idea.java                    JPA entity + validation rules
 │   │   ├── repository/IdeaRepository.java     Spring Data repository
 │   │   ├── service/IdeaService.java           Business logic (create, vote)

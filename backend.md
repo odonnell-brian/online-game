@@ -5,12 +5,12 @@ A JSON-only REST API built on Spring Boot 3.3 and Java 17, with JPA persistence 
 ## 1. General structure
 
 ```
-interview-starter/
+starter-app/
 ├── pom.xml                              Maven build and dependencies
 ├── data/                                H2 database files (created at first run)
 └── src/main/
-    ├── java/com/example/interview/
-    │   ├── InterviewApplication.java          Entry point
+    ├── java/com/brian/starter/
+    │   ├── StarterApplication.java          Entry point
     │   ├── model/Idea.java                    JPA entity and validation rules
     │   ├── repository/IdeaRepository.java     Data access interface
     │   ├── service/IdeaService.java           Business logic
@@ -23,11 +23,11 @@ The layering is **Controller → Service → Repository → Database**. Controll
 
 ## 2. Entry points
 
-### Application entry: `InterviewApplication`
+### Application entry: `StarterApplication`
 
 `main()` calls `SpringApplication.run(...)`. The `@SpringBootApplication` annotation on the class combines three things:
 
-- **`@ComponentScan`** scans `com.example.interview` and all sub-packages, so the controller and repository are picked up automatically. Anything placed outside this package tree will not be found.
+- **`@ComponentScan`** scans `com.brian.starter` and all sub-packages, so the controller and repository are picked up automatically. Anything placed outside this package tree will not be found.
 - **`@EnableAutoConfiguration`** inspects the classpath and configures beans for you. Because `spring-boot-starter-web` is present you get an embedded Tomcat and `DispatcherServlet`. Because `spring-boot-starter-data-jpa` and `h2` are present you get a `DataSource`, Hibernate, and a transaction manager.
 - **`@Configuration`** lets the class itself define beans if you need to.
 
@@ -41,7 +41,7 @@ The layering is **Controller → Service → Repository → Database**. Controll
 
 ### Operational entry: H2 console
 
-`http://localhost:8080/h2-console` with JDBC URL `jdbc:h2:file:./data/interview`, user `sa`, blank password. Useful for confirming rows during a live session.
+`http://localhost:8080/h2-console` with JDBC URL `jdbc:h2:file:./data/starter`, user `sa`, blank password. Useful for checking what is stored.
 
 ## 3. How the pieces connect to the frameworks
 
@@ -91,21 +91,21 @@ To map a new exception, add an `@ExceptionHandler` method that returns a `Proble
 - `IdeaRepository extends JpaRepository<Idea, Long>` is only an interface. Spring generates the implementation at startup, giving you `save`, `findAll`, `findById`, `deleteById`, and so on.
 - Custom queries can be added as derived methods, for example `List<Idea> findByTitleContainingIgnoreCase(String q)`, with no SQL needed.
 - `Idea` is mapped with `@Entity`. The id uses `@GeneratedValue(strategy = IDENTITY)`, so the database assigns it. `createdAt` is initialized when the object is constructed.
-- `spring.jpa.hibernate.ddl-auto=update` makes Hibernate create or alter tables from the entity on startup. That is convenient for an interview and not appropriate for production, where you would use migrations (Flyway or Liquibase).
+- `spring.jpa.hibernate.ddl-auto=update` makes Hibernate create or alter tables from the entity on startup. That is convenient for local development and not appropriate for production, where you would use migrations (Flyway or Liquibase).
 - `spring.jpa.open-in-view=false` keeps the Hibernate session from staying open during view rendering. It is the safer default for an API.
 
 ### Database (H2)
 
-- `spring.datasource.url=jdbc:h2:file:./data/interview;AUTO_SERVER=TRUE` stores data in a file relative to the working directory, so it survives restarts. `AUTO_SERVER` lets the H2 console and the app connect at the same time.
+- `spring.datasource.url=jdbc:h2:file:./data/starter;AUTO_SERVER=TRUE` stores data in a file relative to the working directory, so it survives restarts. `AUTO_SERVER` lets the H2 console and the app connect at the same time.
 - To use Postgres, swap the `h2` dependency in `pom.xml` for `org.postgresql:postgresql` and update the three `spring.datasource.*` properties. No code changes are needed.
 
 ### Build and dev tooling
 
 - `spring-boot-starter-parent` supplies dependency versions, so most dependencies in `pom.xml` have no version tag.
 - `spring-boot-devtools` restarts the app on classpath changes when you run from an IDE.
-- `mvn spring-boot:run` or the green arrow on `InterviewApplication` in IntelliJ both start the server on port 8080.
+- `mvn spring-boot:run` or the green arrow on `StarterApplication` in IntelliJ both start the server on port 8080.
 
-## 4. Common changes during the interview
+## 4. Common changes
 
 | Task | Where to change |
 | --- | --- |
