@@ -1,6 +1,6 @@
 # What the Frameworks Hide
 
-Spring Security, Spring WebSocket, React, and Hibernate each handle a security problem in this project without you writing the protection yourself. That is good for shipping software and bad for learning: you can finish every phase in the [README](README.md) and still only know which settings to flip.
+Spring Security, Spring WebSocket, React, and Hibernate each handle a security problem in this project without you writing the protection yourself. That is good for shipping software and bad for learning: you can finish every phase in the [README](../README.md) and still only know which settings to flip.
 
 This guide lists what each framework does for you behind the scenes, how to make it visible, and a small exercise that makes you build or break it yourself. Read the matching section before each security phase.
 

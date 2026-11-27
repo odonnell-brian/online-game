@@ -60,7 +60,7 @@ Key decisions:
 
 Each phase should end with working code, tests, and a short note in this README about what was learned.
 
-Spring Security, Spring's WebSocket support, React, and Hibernate handle much of the security in this plan without showing you. [security-internals.md](security-internals.md) lists what each one does behind the scenes, how to make it visible, and exercises for building small versions yourself. Read the matching section before starting each security phase.
+Spring Security, Spring's WebSocket support, React, and Hibernate handle much of the security in this plan without showing you. [security-internals.md](docs/security-internals.md) lists what each one does behind the scenes, how to make it visible, and exercises for building small versions yourself. Read the matching section before starting each security phase.
 
 #### Phase 0: Clean up the template
 - [x] Upgrade to current releases: Java 25 (LTS), Spring Boot 4.2 (Spring Framework 7, Spring Security 7, Hibernate 7, Jackson 3), Node 26 (LTS), React 19, Vite 8, Vitest 5, TypeScript 7
@@ -79,7 +79,7 @@ Spring Security, Spring's WebSocket support, React, and Hibernate handle much of
 - [ ] `User` entity (username, password hash, created at) and `UserRepository`
 - [ ] `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`
 - [ ] Session cookie settings: `HttpOnly`, `SameSite=Lax`, `Secure` (when on HTTPS)
-- [ ] For a JSON login endpoint (instead of Spring's built-in form login), save the `SecurityContext` to the session yourself. Since Spring Security 6 this is no longer automatic, and skipping it makes login appear to work while the next request comes back unauthenticated. See [security-internals.md](security-internals.md#2-authentication-flow).
+- [ ] For a JSON login endpoint (instead of Spring's built-in form login), save the `SecurityContext` to the session yourself. Since Spring Security 6 this is no longer automatic, and skipping it makes login appear to work while the next request comes back unauthenticated. See [security-internals.md](docs/security-internals.md#2-authentication-flow).
 - [ ] Change the session ID on login (Spring's session fixation protection, verify it is on)
 - [ ] Generic login error messages ("invalid username or password") so usernames cannot be enumerated
 - [ ] Basic rate limiting or lockout on login attempts
@@ -189,6 +189,12 @@ The sections below describe the stack inherited from the original template. They
 - Backend: Java 25, Spring Boot 4.2, Spring Web MVC, Spring Data JPA (Hibernate 7), Bean Validation
 - Frontend: React 19, TypeScript 7 (strict), Vite 8, Vitest 5
 - Database: H2, stored in a local file (no database install needed)
+
+More detailed guides are in [docs/](docs/):
+
+- [backend.md](docs/backend.md): backend layout, entry points, and how each piece is wired to Spring
+- [frontend.md](docs/frontend.md): frontend layout, entry points, and tooling
+- [security-internals.md](docs/security-internals.md): what the frameworks do for security behind the scenes, and exercises for learning it
 
 ## Prerequisites
 
