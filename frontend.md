@@ -1,11 +1,11 @@
 # Frontend Guide: React + TypeScript + Vite
 
-A single-page app built with React 18, TypeScript (strict mode), and Vite 5. It talks to the Spring Boot backend over JSON. This guide covers the layout, the entry points, and how each piece connects to its tooling.
+A single-page app built with React 19, TypeScript 7 (strict mode), and Vite 8. It talks to the Spring Boot backend over JSON. This guide covers the layout, the entry points, and how each piece connects to its tooling.
 
 ## 1. General structure
 
 ```
-starter-app/
+online-game/
 ├── package.json                  Root runner: npm run setup / npm run dev
 └── frontend/
     ├── package.json              Frontend dependencies and scripts
@@ -36,7 +36,7 @@ Vite serves `index.html` as the page. It contains a `<div id="root">` and a `<sc
 
 ### JavaScript entry: `src/main.tsx`
 
-Imports `App` and the stylesheet, then calls React 18's `createRoot(document.getElementById('root')!).render(<App />)`. This is the only place React is attached to the page.
+Imports `App` and the stylesheet, then calls React's `createRoot(document.getElementById('root')!).render(<App />)`. This is the only place React is attached to the page.
 
 ### Application entry: `src/App.tsx`
 

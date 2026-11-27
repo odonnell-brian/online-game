@@ -1,4 +1,4 @@
-package com.brian.starter.model;
+package com.brian.onlinegame.model;
 
 import java.time.Instant;
 import java.util.Set;

@@ -1,16 +1,16 @@
 # Backend Guide: Spring Boot API
 
-A JSON-only REST API built on Spring Boot 3.3 and Java 17, with JPA persistence to an H2 file database. This guide covers the layout, the entry points, and how each piece is wired to its framework.
+A JSON-only REST API built on Spring Boot 4.2 and Java 25, with JPA persistence to an H2 file database. This guide covers the layout, the entry points, and how each piece is wired to its framework.
 
 ## 1. General structure
 
 ```
-starter-app/
+online-game/
 ├── pom.xml                              Maven build and dependencies
 ├── data/                                H2 database files (created at first run)
 └── src/main/
-    ├── java/com/brian/starter/
-    │   ├── StarterApplication.java          Entry point
+    ├── java/com/brian/onlinegame/
+    │   ├── OnlineGameApplication.java       Entry point
     │   ├── model/Idea.java                    JPA entity and validation rules
     │   ├── repository/IdeaRepository.java     Data access interface
     │   ├── service/IdeaService.java           Business logic
@@ -23,12 +23,12 @@ The layering is **Controller → Service → Repository → Database**. Controll
 
 ## 2. Entry points
 
-### Application entry: `StarterApplication`
+### Application entry: `OnlineGameApplication`
 
 `main()` calls `SpringApplication.run(...)`. The `@SpringBootApplication` annotation on the class combines three things:
 
-- **`@ComponentScan`** scans `com.brian.starter` and all sub-packages, so the controller and repository are picked up automatically. Anything placed outside this package tree will not be found.
-- **`@EnableAutoConfiguration`** inspects the classpath and configures beans for you. Because `spring-boot-starter-web` is present you get an embedded Tomcat and `DispatcherServlet`. Because `spring-boot-starter-data-jpa` and `h2` are present you get a `DataSource`, Hibernate, and a transaction manager.
+- **`@ComponentScan`** scans `com.brian.onlinegame` and all sub-packages, so the controller and repository are picked up automatically. Anything placed outside this package tree will not be found.
+- **`@EnableAutoConfiguration`** inspects the classpath and configures beans for you. Because `spring-boot-starter-webmvc` is present you get an embedded Tomcat and `DispatcherServlet`. Because `spring-boot-starter-data-jpa` and `h2` are present you get a `DataSource`, Hibernate, and a transaction manager.
 - **`@Configuration`** lets the class itself define beans if you need to.
 
 ### HTTP entry: `IdeaApiController`
@@ -41,7 +41,7 @@ The layering is **Controller → Service → Repository → Database**. Controll
 
 ### Operational entry: H2 console
 
-`http://localhost:8080/h2-console` with JDBC URL `jdbc:h2:file:./data/starter`, user `sa`, blank password. Useful for checking what is stored.
+`http://localhost:8080/h2-console` with JDBC URL `jdbc:h2:file:./data/onlinegame`, user `sa`, blank password. Useful for checking what is stored.
 
 ## 3. How the pieces connect to the frameworks
 
@@ -61,7 +61,7 @@ HTTP request
   → Jackson serializes the result back to JSON
 ```
 
-### Spring MVC (`spring-boot-starter-web`)
+### Spring MVC (`spring-boot-starter-webmvc`)
 
 - `@RestController` marks the class as a controller whose return values are written straight to the response body, not resolved as view names.
 - `@RequestMapping("/api/ideas")` sets the base path, with `@GetMapping` and `@PostMapping` for the methods.
@@ -96,14 +96,14 @@ To map a new exception, add an `@ExceptionHandler` method that returns a `Proble
 
 ### Database (H2)
 
-- `spring.datasource.url=jdbc:h2:file:./data/starter;AUTO_SERVER=TRUE` stores data in a file relative to the working directory, so it survives restarts. `AUTO_SERVER` lets the H2 console and the app connect at the same time.
+- `spring.datasource.url=jdbc:h2:file:./data/onlinegame;AUTO_SERVER=TRUE` stores data in a file relative to the working directory, so it survives restarts. `AUTO_SERVER` lets the H2 console and the app connect at the same time.
 - To use Postgres, swap the `h2` dependency in `pom.xml` for `org.postgresql:postgresql` and update the three `spring.datasource.*` properties. No code changes are needed.
 
 ### Build and dev tooling
 
 - `spring-boot-starter-parent` supplies dependency versions, so most dependencies in `pom.xml` have no version tag.
 - `spring-boot-devtools` restarts the app on classpath changes when you run from an IDE.
-- `mvn spring-boot:run` or the green arrow on `StarterApplication` in IntelliJ both start the server on port 8080.
+- `mvn spring-boot:run` or the green arrow on `OnlineGameApplication` in IntelliJ both start the server on port 8080.
 
 ## 4. Common changes
 

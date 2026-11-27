@@ -1,8 +1,8 @@
-package com.brian.starter.repository;
+package com.brian.onlinegame.repository;
 
-import com.brian.starter.model.Idea;
+import com.brian.onlinegame.model.Idea;
 
-import com.brian.starter.model.IdeaStatus;
+import com.brian.onlinegame.model.IdeaStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

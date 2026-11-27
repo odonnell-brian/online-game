@@ -1,5 +1,5 @@
 {
-  "name": "starter-app",
+  "name": "online-game",
   "private": true,
   "version": "0.0.1",
   "scripts": {
@@ -7,6 +7,6 @@
     "dev": "concurrently -n api,web -c blue,green \"mvn spring-boot:run\" \"npm --prefix frontend run dev\""
   },
   "devDependencies": {
-    "concurrently": "9.0.1"
+    "concurrently": "10.0.7"
   }
 }

@@ -1,9 +1,9 @@
-package com.brian.starter.controller;
+package com.brian.onlinegame.controller;
 
-import com.brian.starter.model.Idea;
-import com.brian.starter.model.IdeaResponse;
-import com.brian.starter.model.IdeaStatusRequest;
-import com.brian.starter.service.IdeaService;
+import com.brian.onlinegame.model.Idea;
+import com.brian.onlinegame.model.IdeaResponse;
+import com.brian.onlinegame.model.IdeaStatusRequest;
+import com.brian.onlinegame.service.IdeaService;
 
 import jakarta.validation.Valid;
 

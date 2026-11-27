@@ -1,4 +1,4 @@
-package com.brian.starter.model;
+package com.brian.onlinegame.model;
 
 import jakarta.validation.constraints.NotNull;
 

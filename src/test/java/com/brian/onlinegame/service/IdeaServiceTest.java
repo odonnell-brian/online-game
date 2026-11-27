@@ -1,14 +1,14 @@
-package com.brian.starter.service;
+package com.brian.onlinegame.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.brian.starter.exception.IdeaNotFoundException;
-import com.brian.starter.model.Idea;
-import com.brian.starter.model.IdeaStatus;
-import com.brian.starter.repository.IdeaRepository;
+import com.brian.onlinegame.exception.IdeaNotFoundException;
+import com.brian.onlinegame.model.Idea;
+import com.brian.onlinegame.model.IdeaStatus;
+import com.brian.onlinegame.repository.IdeaRepository;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

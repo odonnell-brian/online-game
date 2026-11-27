@@ -1,7 +1,6 @@
-package com.brian.starter.model;
+package com.brian.onlinegame.model;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -36,14 +35,5 @@ public enum IdeaStatus {
         return Arrays.stream(IdeaStatus.values())
                 .filter(Predicate.not(IdeaStatus::isTerminal))
                 .collect(Collectors.toSet());
-    }
-
-    public static Map<IdeaStatus, Set<IdeaStatus>> getAllowedTransitions() {
-        return Arrays.stream(IdeaStatus.values())
-                .collect(
-                        Collectors.toMap(
-                                Function.identity(),
-                                IdeaStatus::getAllowedNextStatuses,
-                                (a, b) -> a));
     }
 }
